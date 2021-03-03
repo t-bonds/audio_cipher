@@ -4,7 +4,7 @@ import sys
 import controller
 
 
-def file_not_found_menu():
+def file_not_found_menu(cwd):
 
     print("\n-----FILE NOT FOUND MENU-----")
 
@@ -23,7 +23,14 @@ def file_not_found_menu():
         input("Halting... Please Add a Message File to the Directory.\nPress \"Enter\" To Continue...")
         main()
     elif file_not_found_menu_choice == 2:
-        return
+        if os.path.isfile(cwd + '/message.txt'):
+            overwrite(cwd)
+        else:
+            msg = input(
+                "Please Input a Message... This Message will be converted to a text file. \nPress \"Enter\" To Continue")
+            message_creator(msg)
+
+        controller.main_menu()
     elif file_not_found_menu_choice == 3:
         print("\nA message file must exist in the same directory as the program. This file contains the message to be encoded. \nFrom here, you may:\n\nAdd A Message File: The program will wait. At this point, you may add your own message file to the directory. \nWhen you have done this, the program will prompt you to continue, and will rescan the directory for the message file. \n-----MESSAGE FILE MUST BE NAMED \"message.txt\"-----\n\nCreate A Message File: The program will create a message file for you, using input given from the command line.\nPress \"Enter\" when complete. If you message contains characters that cannot be read on a command line, \nor \"Enter\" must be pressed for any reason other than continuing, it is recommended that you add a message file created through another editor.\n")
         file_not_found_menu()
@@ -34,12 +41,32 @@ def file_not_found_menu():
         sys.exit(0)
     else:
         print("\nInvalid Option...")
-        file_not_found_menu()
+        file_not_found_menu(cwd)
 
 
-def message_creator():
+def message_creator(msg):
+    # TODO Create Function
+    return
 
-    pass
+
+def overwrite(cwd):
+    print(
+        "\nAttention: A Message File Has Been Found. Continuing Will Overwrite This File.")
+    print("\n\tDo You Wish To Continue?\n\t1. Yes \n\t2. No")
+    try:
+        overwrite_choice = int(input("Please Select an Option: "))
+    except ValueError:
+        print("\tError: Value Must Be A Number.\n")
+        overwrite()
+    if overwrite_choice == 1:
+        msg = input(
+            "This Message will be converted to a text file. \nPlease Input A Message And Press \"Enter\" To Continue: ")
+        message_creator(msg)
+    elif overwrite_choice == 2:
+        file_not_found_menu(cwd)
+    else:
+        print("Invalid Option: Must Be 1 or 2...")
+        overwrite(cwd)
 
 
 def main():
@@ -47,4 +74,4 @@ def main():
 
     if not os.path.isfile(cwd + '/message.txt'):
         print("\nMessage File Not Found...")
-        file_not_found_menu()
+        file_not_found_menu(cwd)
