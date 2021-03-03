@@ -20,7 +20,8 @@ def file_not_found_menu():
         print("\tError: Value Must Be A Number.\n")
         file_not_found_menu()
     if file_not_found_menu_choice == 1:
-        return
+        input("Halting... Please Add a Message File to the Directory.\nPress \"Enter\" To Continue...")
+        main()
     elif file_not_found_menu_choice == 2:
         return
     elif file_not_found_menu_choice == 3:
