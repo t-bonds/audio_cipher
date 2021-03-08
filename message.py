@@ -27,7 +27,7 @@ def file_not_found_menu(cwd):
             overwrite(cwd, ret)
         else:
             msg = input(
-                "Please Input a Message... This Message will be converted to a text file. \nPress \"Enter\" To Continue")
+                "This Message will be converted to a text file. \nPlease Input A Message And Press \"Enter\" To Continue: ")
             message_creator(msg)
 
         controller.main_menu()
@@ -51,9 +51,10 @@ def file_found_menu(cwd):
     print("\n\tOptions:")
     print("\t1. Overwrite Message File")
     print("\t2. Delete Message File")
-    print("\t3. Help")
-    print("\t4. Return To Main Menu")
-    print("\t5. Exit")
+    print("\t3. View Message File")
+    print("\t4. Help")
+    print("\t5. Return To Main Menu")
+    print("\t6. Exit")
     try:
         file_found_menu_choice = int(input("Please Select an Option: "))
     except ValueError:
@@ -64,11 +65,11 @@ def file_found_menu(cwd):
             overwrite(cwd, ret)
         else:
             print(
-                "Error: A Message File has been removed from the directory. \n\tReseting...")
+                "Error: A Message File has been removed from the directory. \n\tResetting...")
             main()
     elif file_found_menu_choice == 2:
         print(
-            "\nAttention: This Option Will Delete Message Files")
+            "\nAttention: This Option Will Delete Message Files.")
         print("\n\tDo You Wish To Continue?\n\t1. Yes \n\t2. No")
         try:
             delete_choice = int(input("Please Select an Option: "))
@@ -78,6 +79,8 @@ def file_found_menu(cwd):
         if delete_choice == 1:
             if os.path.exists("message.txt"):
                 os.remove("message.txt")
+                print("\nMessage File Deleted.\nReturning...")
+                main()
             else:
                 print("Message File Not Found\n\tExiting...")
                 main()
@@ -88,11 +91,19 @@ def file_found_menu(cwd):
             print("Invalid Option: Must Be 1 or 2...")
             file_found_menu(cwd)
     elif file_found_menu_choice == 3:
-        print("\nA message file must exist in the same directory as the program. This file contains the message to be encoded. \nFrom here, you may:\n\nOverwrite A Message File: Take an existing message file and overwrite its contents with a new message. \n\nDelete A Message File: Delete a existing message file.\n")
+        print("\n-----MESSAGE FILE CONTENTS-----\n")
+
+        with open("message.txt", 'r') as f:
+            cat = f.read()
+            print(cat)
+        print("\n-----END MESSAGE FILE-----\n")
         file_found_menu(cwd)
     elif file_found_menu_choice == 4:
-        controller.main_menu()
+        print("\nA message file must exist in the same directory as the program. This file contains the message to be encoded. \nFrom here, you may:\n\nOverwrite A Message File: Take an existing message file and overwrite its contents with a new message. \n\nDelete A Message File: Delete a existing message file.\n")
+        file_found_menu(cwd)
     elif file_found_menu_choice == 5:
+        controller.main_menu()
+    elif file_found_menu_choice == 6:
         print("Goodbye...")
         sys.exit(0)
     else:
@@ -101,8 +112,10 @@ def file_found_menu(cwd):
 
 
 def message_creator(msg):
-    # TODO Create Function
-    return
+    with open("message.txt", 'w') as f:
+        f.write(msg)
+    print("\nMessage File Created/Overwritten. \nReturning to Main Menu...")
+    main()
 
 
 def overwrite(cwd, ret):
