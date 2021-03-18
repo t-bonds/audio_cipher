@@ -61,7 +61,7 @@ def main():
         if menu_choice == 1:
             message.main()
         elif menu_choice == 2:
-            encoder.settings()
+            encoder.settings_menu()
         elif menu_choice == 3:
             return
         elif menu_choice == 4:
