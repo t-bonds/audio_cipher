@@ -12,7 +12,7 @@ def init_parse(code):
     elif code == 1:
         parser.read("decoder_settings.ini")
     else:
-        print("System Error: Invalid Coding Option")
+        print("System Error: Invalid Coding Option. Please Repair Script.")
         sys.exit(1)
     return parser
 
@@ -42,7 +42,7 @@ def change_settings(settings, code):
         change_settings_choice = int(input("Please Select an Option: "))
     except ValueError:
         print("\tError: Value Must Be A Number.\n")
-        change_settings()
+        change_settings(settings, code)
 
     if change_settings_choice in range(0, count + 1):
         for i, e in enumerate(settings):
@@ -58,26 +58,39 @@ def change_settings(settings, code):
         parser = init_parse(code)
         new_setting = str(new_setting)
         parser.set('SETTINGS', setting, new_setting)
-        with open('config.ini', 'w') as f:
-            parser.write(f)
-        settings_menu()
+        if code == 0:
+            with open('encoder_settings.ini', 'w') as f:
+                parser.write(f)
+        elif code == 1:
+            with open('decoder_settings.ini', 'w') as f:
+                parser.write(f)
+        else:
+            print("System Error: Invalid Coding Option. Please Repair Script.")
+            sys.exit(1)
+        settings_menu(code)
 
     elif change_settings_choice == count + 1:
-        settings_menu()
+        settings_menu(code)
     else:
         print("\nInvalid Option...")
         change_settings(settings, code)
 
 
-def print_settings(settings):
-    print("\n-----CURRENT ENCODER SETTINGS-----\n")
+def print_settings(settings, code):
+    if code == 0:
+        print("\n-----CURRENT ENCODER SETTINGS-----\n")
+    elif code == 1:
+        print("\n-----CURRENT DECODER SETTINGS-----\n")
+    else:
+        print("System Error: Invalid Coding Option. Please Repair Script.")
+        sys.exit(1)
     for i in settings:
         print(i + " = " + settings[i])
 
 
 def settings_menu(code):
     settings = init(code)
-    print_settings(settings)
+    print_settings(settings, code)
     print("\n-----SETTINGS MENU-----")
     print("\n\tOptions:")
     print("\t1. Change Settings")
@@ -88,12 +101,12 @@ def settings_menu(code):
         settings_choice = int(input("Please Select an Option: "))
     except ValueError:
         print("\tError: Value Must Be A Number.\n")
-        settings_menu()
+        settings_menu(code)
     if settings_choice == 1:
         change_settings(settings, code)
     elif settings_choice == 2:
         print("\nTone, Key, & Cipher Settings for Encoding stored in 'encoder_settings.ini' file.\nSettings for Decoding stored in 'decode_settings.ini' file.\n")
-        settings_menu()
+        settings_menu(code)
     elif settings_choice == 3:
         controller.main_menu()
     elif settings_choice == 4:
@@ -101,9 +114,4 @@ def settings_menu(code):
         sys.exit(0)
     else:
         print("\nInvalid Option...")
-        main_menu()
-
-
-if __name__ == '__main__':
-    code = 99
-    settings_menu(code)
+        settings_menu(code)

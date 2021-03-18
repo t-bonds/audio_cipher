@@ -7,16 +7,7 @@ import encoder
 import settings
 
 
-def parse():
-    parser = ArgumentParser()
-    parser.add_argument("-o", "--option", type=int,
-                        dest="menu_choice",  help="Set Menu Option", default=0)
-    arguments = parser.parse_args()
-    return arguments
-
-
 def main_menu():
-    code = 99
     print("\n-----AUDITORY SHIFT CIPHER MAIN MENU-----")
     print("\n\tOptions:")
     print("\t1. Create Message")
@@ -52,30 +43,7 @@ def main_menu():
 
 def main():
     code = 99
-    if len(sys.argv) > 1:
-        args = parse()
-        menu_choice = args.menu_choice
-        if menu_choice == 1:
-            message.main()
-        elif menu_choice == 2:
-            code = 0
-            settings.settings_menu(code)
-        elif menu_choice == 3:
-            return
-        elif menu_choice == 4:
-            code = 1
-            settings.settings_menu(code)
-        elif menu_choice == 5:
-            return
-        elif menu_choice == 6:
-            print("Goodbye...")
-            sys.exit(0)
-        else:
-            print("\nInvalid Option...")
-            main_menu()
-    else:
-        print("Command Line Arguments Not Detected...\nEntering User Interface.")
-        main_menu()
+    main_menu()
 
 
 if __name__ == '__main__':
