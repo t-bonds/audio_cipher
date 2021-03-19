@@ -27,7 +27,7 @@ def main_menu():
         code = 0
         settings.settings_menu(code)
     elif menu_choice == 3:
-        return
+        encoder.main()
     elif menu_choice == 4:
         code = 1
         settings.settings_menu(code)

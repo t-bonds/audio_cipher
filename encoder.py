@@ -5,12 +5,6 @@ import configparser
 import controller
 
 
-def init_parse():
-    parser = configparser.ConfigParser()
-    parser.read("encoder_settings.ini")
-    return parser
-
-
 def init():
     settings = {}
     parser = init_parse()
@@ -22,17 +16,23 @@ def init():
     return settings
 
 
-def main():
-
-    settings = init()
-    print_settings(settings)
-    print("\n-----SETTINGS LOADED-----\n")
+def init_parse():
+    parser = configparser.ConfigParser()
+    parser.read("encoder_settings.ini")
+    return parser
 
 
 def print_settings(settings):
     print("\n-----CURRENT ENCODER SETTINGS-----\n")
     for i in settings:
         print(i + " = " + settings[i])
+
+
+def main():
+
+    settings = init()
+    print_settings(settings)
+    print("\n-----SETTINGS LOADED-----\n")
 
 
 def shift():
