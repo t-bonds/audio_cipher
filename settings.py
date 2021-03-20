@@ -1,7 +1,8 @@
 #!usr/bin/env python3
 
-import sys
 import configparser
+import sys
+
 import controller
 
 
@@ -49,12 +50,9 @@ def change_settings(settings, code):
             if i == change_settings_choice - 1:
                 setting = e
 
-        try:
-            new_setting = float(
-                input("Please Enter A New Value For \'" + setting + "\': "))
-        except ValueError:
-            print("\tError: Value Must Be A Number.\n")
-            change_settings(settings, code)
+        new_setting = input(
+            "Please Enter A New Value For \'" + setting + "\': ")
+
         parser = init_parse(code)
         new_setting = str(new_setting)
         parser.set('SETTINGS', setting, new_setting)

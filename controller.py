@@ -1,9 +1,9 @@
 #!usr/bin/env python3
 
 import sys
-from argparse import ArgumentParser
-import message
+
 import encoder
+import message
 import settings
 
 
@@ -42,7 +42,6 @@ def main_menu():
 
 
 def main():
-    code = 99
     main_menu()
 
 

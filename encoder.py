@@ -1,8 +1,10 @@
 #!usr/bin/env python3
 
-import sys
 import configparser
+import os
+
 import controller
+import message
 
 
 def init():
@@ -13,13 +15,27 @@ def init():
     for i in args:
         settings[i] = args[i]
 
-    return settings
+    msg = msg_parse()
+
+    return settings, msg
 
 
 def init_parse():
     parser = configparser.ConfigParser()
     parser.read("encoder_settings.ini")
     return parser
+
+
+def msg_parse():
+    cwd = os.getcwd()
+
+    if not os.path.isfile(cwd + '/message.txt'):
+        print("\nMessage File Not Found...")
+        print("Redirecting to Message Creator")
+        message.file_not_found_menu(cwd)
+    with open('message.txt', 'r') as f:
+        msg = f.read()
+        return msg
 
 
 def print_settings(settings):
@@ -29,14 +45,27 @@ def print_settings(settings):
 
 
 def main():
-
-    settings = init()
+    print("\n-----ENCODING-----\n")
+    settings, msg = init()
     print_settings(settings)
     print("\n-----SETTINGS LOADED-----\n")
 
+    if int(settings['shift']) == 1:
+        print("-----SHIFTING-----\n")
+        shift(settings, msg)
 
-def shift():
-    pass
+
+def shift(settings, msg):
+    ciphertext = ''
+    for char in msg:
+        if char.isupper():
+            ciphertext += chr((ord(char) +
+                               (int(settings['key']) - 65)) % 26 + 65)
+        else:
+            ciphertext += chr((ord(char) +
+                               (int(settings['key']) - 97)) % 26 + 97)
+    print(ciphertext)
+    print(print("\n-----SHIFTING COMPLETE-----\n"))
 
 
 def encode():
