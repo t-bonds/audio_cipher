@@ -1,9 +1,10 @@
 #!usr/bin/env python3
 
-import numpy as np
-import sounddevice as sd
 import time
 from argparse import ArgumentParser
+
+import numpy as np
+import sounddevice as sd
 
 low = [697, 770, 852, 941]
 high = [1209, 1336, 1477, 1633]
@@ -67,7 +68,7 @@ alphabet = {"1": [tones["1"], 1],
             "Z": [tones["9"], 5],
             "*": [tones["*"], 1],
             "#": [tones["#"], 1],
-            " ": [tones["*"], ]}
+            " ": [tones["#"], 2]}
 
 
 def parse():
@@ -108,8 +109,8 @@ def wave(args, low, high, tones, value, alphabet, message):
     key = []
     tone = []
     if args.message:
-        for e in value:
-            key = alphabet[e]
+        for e in value:  # TODO update alphabet with lower case values
+            key = alphabet[e.upper()]
             tone = key[0]
             freq_1 = low[tone[0]]
             freq_2 = high[tone[1]]
