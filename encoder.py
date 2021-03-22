@@ -1,8 +1,11 @@
 #!usr/bin/env python3
 
 import configparser
+import math
 import os
+import struct
 import time
+import wave
 
 import controller
 import message
@@ -42,40 +45,42 @@ def msg_parse():
 
 
 def print_settings(settings):
-    print("\n-----CURRENT ENCODER SETTINGS-----\n")
+    print("-----CURRENT ENCODER SETTINGS-----\n")
     for i in settings:
         print(i + " = " + settings[i])
 
 
 def main():
-    print("\n-----ENCODING-----\n")
+    print("\n-----STARTING ENCODER-----")
     settings, msg = init()
     print_settings(settings)
-    print("\n-----SETTINGS LOADED-----\n")
+    print("\n-----SETTINGS LOADED-----")
     ciphertext = ''
-    if int(settings['shift']) == 1:
+    if settings['shift'] == 'true':
         print("-----SHIFTING-----\n")
         ciphertext = shift(settings, msg, ciphertext)
-
+    else:
+        print('Plaintext: ' + msg)
     encode(settings, msg, ciphertext)
 
 
 def shift(settings, msg, ciphertext):
+    # TODO Adjust shift to include non-alphanumeric characters
     for char in msg:
         if char.isupper():
             ciphertext += chr((ord(char) +
-                               (int(settings['key']) - 65)) % 26 + 65)
+                               (int(settings['shift_key']) - 65)) % 26 + 65)
         else:
             ciphertext += chr((ord(char) +
-                               (int(settings['key']) - 97)) % 26 + 97)
+                               (int(settings['shift_key']) - 97)) % 26 + 97)
     print('Plaintext: ' + msg)
     print('Ciphertext: ' + ciphertext)
-    print("\n-----SHIFTING COMPLETE-----\n")
+    print("\n-----SHIFTING COMPLETE-----")
     return ciphertext
 
 
 def encode(settings, msg, ciphertext):
-    print("\n-----ENCODING TO AUDIO FORMAT-----\n")
+    print("-----ENCODING TO AUDIO FORMAT-----")
     low = [697, 770, 852, 941]
     high = [1209, 1336, 1477, 1633]
     tones = {"1": [0, 0],
@@ -190,21 +195,69 @@ def encode(settings, msg, ciphertext):
                     "}": [tones["9"], tones["3"]],
                     "~": [tones["9"], tones["4"]]}
 
+    audio = []
     if ciphertext == '':
         ciphertext = msg
 
-    for char in ciphertext:
+    for i, char in enumerate(ciphertext):
         key = alphabet_key[char]
         tone = key[0]
         freq_1 = low[tone[0]]
         freq_2 = high[tone[1]]
-        sin_1 = np.sin(2 * np.pi * np.arange(int(settings['sample_rate']) * float(
-            settings['duration'])) * freq_1 / int(settings['sample_rate']))
-        sin_2 = np.sin(2 * np.pi * np.arange(int(settings['sample_rate']) * float(
-            settings['duration'])) * freq_2 / int(settings['sample_rate']))
-        sd.play(sin_1 + sin_2)
-        time.sleep(float(settings['pause']))
-        # TODO Change to write to .wav. format, then play .wav file.
+        append_sin_wave(settings, freq_1, freq_2, audio)
+        if not float(settings['pause']) == 0.0:
+            append_pause(settings, audio)
+
+    file_path = save_file(settings, audio)
+    if settings['broadcast'] == 'true':
+        print("-----PLAYING AUDIO-----")
+        sd.play(file_path)
+    if settings['file'] == 'false':
+        os.remove(file_path)
+        if len(os.listdir(os.getcwd() + '/audio_files/')) == 0:
+            os.rmdir(os.getcwd() + '/audio_files/')
+    if settings['broadcast'] == 'false' and settings['file'] == 'false':
+        print("ERROR: 'broadcast' and 'file' variables are both false. This program will not generate any output.")
+    print("\n-----EXECUTION COMPLETE-----\n")
+    controller.main_menu()
+
+
+def append_pause(settings, audio):
+    num_samples = (float(settings['pause']) * 1000) * \
+        (int(settings['sample_rate']) / 1000)
+
+    for i in range(int(num_samples)):
+        audio.append(0.0)
+    return
+
+
+def append_sin_wave(settings, freq_1, freq_2, audio):
+    num_samples = (float(settings['duration']) *
+                   1000) * (int(settings['sample_rate']) / 1000)
+
+    for i in range(int(num_samples)):
+        audio.append(float(settings['volume']) * np.sin(2 * math.pi * freq_1 * (i / float(settings['sample_rate']))) + float(
+            settings['volume']) * np.sin(2 * math.pi * freq_2 * (i / float(settings['sample_rate']))))
+    return
+
+
+def save_file(settings, audio):
+    time_str = time.strftime("%Y%m%d-%H%M%S")
+    file_name = time_str + ".wav"
+    if not os.path.isdir(os.getcwd() + '/audio_files/'):
+        os.mkdir(os.getcwd() + '/audio_files/')
+    file_path = os.getcwd() + '/audio_files/' + file_name
+    with wave.open(file_path, 'wb') as wav_file:
+        wav_file.setnchannels(1)
+        wav_file.setsampwidth(2)
+        wav_file.setnframes(len(audio))
+        wav_file.setframerate(int(settings['sample_rate']))
+        wav_file.setcomptype("NONE", "no compression")
+
+        for sample in audio:
+            wav_file.writeframes(struct.pack('h', int(sample * 32767.0)))
+    print("-----ENCODING COMPLETE-----")
+    return file_path
 
 
 if __name__ == '__main__':
