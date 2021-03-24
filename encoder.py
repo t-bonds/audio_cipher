@@ -10,7 +10,8 @@ import wave
 import controller
 import message
 import numpy as np
-import sounddevice as sd
+from pydub import AudioSegment
+from pydub.playback import play
 
 
 def init():
@@ -55,6 +56,9 @@ def main():
     settings, msg = init()
     print_settings(settings)
     print("\n-----SETTINGS LOADED-----")
+    if settings['broadcast'] == 'false' and settings['file'] == 'false':
+        print("ERROR: 'broadcast' and 'file' variables are both false. This program will not generate any output.")
+        controller.main_menu()
     ciphertext = ''
     if settings['shift'] == 'true':
         print("-----SHIFTING-----\n")
@@ -201,24 +205,29 @@ def encode(settings, msg, ciphertext):
 
     for i, char in enumerate(ciphertext):
         key = alphabet_key[char]
-        tone = key[0]
-        freq_1 = low[tone[0]]
-        freq_2 = high[tone[1]]
+        tone_1 = key[0]
+        tone_2 = key[1]
+        freq_1 = low[tone_1[0]]
+        freq_2 = high[tone_1[1]]
+        freq_3 = low[tone_2[0]]
+        freq_4 = high[tone_2[1]]
         append_sin_wave(settings, freq_1, freq_2, audio)
+        if not float(settings['pause']) == 0.0:
+            append_pause(settings, audio)
+        append_sin_wave(settings, freq_3, freq_4, audio)
         if not float(settings['pause']) == 0.0:
             append_pause(settings, audio)
 
     file_path = save_file(settings, audio)
     if settings['broadcast'] == 'true':
         print("-----PLAYING AUDIO-----")
-        sd.play(file_path)
+        audio_file = AudioSegment.from_wav(file_path)
+        play(audio_file)
     if settings['file'] == 'false':
         os.remove(file_path)
         if len(os.listdir(os.getcwd() + '/audio_files/')) == 0:
             os.rmdir(os.getcwd() + '/audio_files/')
-    if settings['broadcast'] == 'false' and settings['file'] == 'false':
-        print("ERROR: 'broadcast' and 'file' variables are both false. This program will not generate any output.")
-    print("\n-----EXECUTION COMPLETE-----\n")
+    print("-----EXECUTION COMPLETE-----")
     controller.main_menu()
 
 
