@@ -51,40 +51,8 @@ def print_settings(settings):
         print(i + " = " + settings[i])
 
 
-def main():
-    print("\n-----STARTING ENCODER-----")
-    settings, msg = init()
-    print_settings(settings)
-    print("\n-----SETTINGS LOADED-----")
-    if settings['broadcast'] == 'false' and settings['file'] == 'false':
-        print("ERROR: 'broadcast' and 'file' variables are both false. This program will not generate any output.")
-        controller.main_menu()
-    ciphertext = ''
-    if settings['shift'] == 'true':
-        print("-----SHIFTING-----\n")
-        ciphertext = shift(settings, msg, ciphertext)
-    else:
-        print('Plaintext: ' + msg)
-    encode(settings, msg, ciphertext)
+def init_keys():
 
-
-def shift(settings, msg, ciphertext):
-    # TODO Adjust shift to include non-alphanumeric characters
-    for char in msg:
-        if char.isupper():
-            ciphertext += chr((ord(char) +
-                               (int(settings['shift_key']) - 65)) % 26 + 65)
-        else:
-            ciphertext += chr((ord(char) +
-                               (int(settings['shift_key']) - 97)) % 26 + 97)
-    print('Plaintext: ' + msg)
-    print('Ciphertext: ' + ciphertext)
-    print("\n-----SHIFTING COMPLETE-----")
-    return ciphertext
-
-
-def encode(settings, msg, ciphertext):
-    print("-----ENCODING TO AUDIO FORMAT-----")
     low = [697, 770, 852, 941]
     high = [1209, 1336, 1477, 1633]
     tones = {"1": [0, 0],
@@ -198,6 +166,43 @@ def encode(settings, msg, ciphertext):
                     "|": [tones["9"], tones["2"]],
                     "}": [tones["9"], tones["3"]],
                     "~": [tones["9"], tones["4"]]}
+    return low, high, tones, alphabet_key
+
+
+def main():
+    print("\n-----STARTING ENCODER-----")
+    settings, msg = init()
+    low, high, tones, alphabet_key = init_keys()
+    print_settings(settings)
+    print("\n-----SETTINGS LOADED-----")
+    if settings['broadcast'] == 'false' and settings['file'] == 'false':
+        print("ERROR: 'broadcast' and 'file' variables are both false. This program will not generate any output.")
+        controller.main_menu()
+    ciphertext = ''
+    if settings['shift'] == 'true':
+        print("-----SHIFTING-----\n")
+        ciphertext = shift(settings, msg, ciphertext, alphabet_key)
+    else:
+        print('Plaintext: ' + msg)
+    encode(settings, msg, ciphertext, low, high, tones, alphabet_key)
+
+
+def shift(settings, msg, ciphertext, alphabet_key):
+
+    alphabet = list(alphabet_key.keys())
+
+    for char in msg:
+        for index, character in enumerate(alphabet):
+            if char == character:
+                ciphertext += alphabet[index + int(settings['shift_key'])]
+    print('Plaintext: ' + msg)
+    print('Ciphertext: ' + ciphertext)
+    print("\n-----SHIFTING COMPLETE-----")
+    return ciphertext
+
+
+def encode(settings, msg, ciphertext, low, high, tones, alphabet_key):
+    print("-----ENCODING TO AUDIO FORMAT-----")
 
     audio = []
     if ciphertext == '':
