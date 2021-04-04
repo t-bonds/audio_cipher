@@ -5,6 +5,7 @@ import sys
 import encoder
 import message
 import settings
+import audio_file
 
 
 def main_menu():
@@ -13,9 +14,10 @@ def main_menu():
     print("\t1. Create Message")
     print("\t2. Encoder Settings")
     print("\t3. Generate Tones")
-    print("\t4. Decoder Settings")
-    print("\t5. Decode Message")
-    print("\t6. Exit")
+    print("\t4. Create Audio File")
+    print("\t5. Decoder Settings")
+    print("\t6. Decode Message")
+    print("\t7. Exit")
     try:
         menu_choice = int(input("Please Select an Option: "))
     except ValueError:
@@ -29,11 +31,13 @@ def main_menu():
     elif menu_choice == 3:
         encoder.main()
     elif menu_choice == 4:
+        audio_file.main()
+    elif menu_choice == 5:
         code = 1
         settings.settings_menu(code)
-    elif menu_choice == 5:
-        return
     elif menu_choice == 6:
+        return
+    elif menu_choice == 7:
         print("Goodbye...")
         sys.exit(0)
     else:

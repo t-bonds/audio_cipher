@@ -230,8 +230,8 @@ def encode(settings, msg, ciphertext, low, high, tones, alphabet_key):
         play(audio_file)
     if settings['file'] == 'false':
         os.remove(file_path)
-        if len(os.listdir(os.getcwd() + '/audio_files/')) == 0:
-            os.rmdir(os.getcwd() + '/audio_files/')
+        if len(os.listdir(os.getcwd() + '/generated_audio/')) == 0:
+            os.rmdir(os.getcwd() + '/generated_audio/')
     print("-----EXECUTION COMPLETE-----")
     controller.main_menu()
 
@@ -258,9 +258,9 @@ def append_sin_wave(settings, freq_1, freq_2, audio):
 def save_file(settings, audio):
     time_str = time.strftime("%Y%m%d-%H%M%S")
     file_name = time_str + ".wav"
-    if not os.path.isdir(os.getcwd() + '/audio_files/'):
-        os.mkdir(os.getcwd() + '/audio_files/')
-    file_path = os.getcwd() + '/audio_files/' + file_name
+    if not os.path.isdir(os.getcwd() + '/generated_audio/'):
+        os.mkdir(os.getcwd() + '/generated_audio/')
+    file_path = os.getcwd() + '/generated_audio/' + file_name
     with wave.open(file_path, 'wb') as wav_file:
         wav_file.setnchannels(1)
         wav_file.setsampwidth(2)
