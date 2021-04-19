@@ -100,7 +100,7 @@ def file_found_menu(cwd):
         print("\n-----END MESSAGE FILE-----\n")
         file_found_menu(cwd)
     elif file_found_menu_choice == 4:
-        print("\nA message file must exist in the same directory as the program. This file contains the message to be encoded. \nFrom here, you may:\n\nOverwrite A Message File: Take an existing message file and overwrite its contents with a new message. \n\nDelete A Message File: Delete a existing message file.\n")
+        print("\nA message file must exist in the same directory as the program. This file contains the message to be encoded. \nFrom here, you may:\n\nOverwrite A Message File: Take an existing message file and overwrite its contents with a new message. \n\nDelete A Message File: Delete a existing message file.\n\n View Message File: Print out the coontents of the message file.\n")
         file_found_menu(cwd)
     elif file_found_menu_choice == 5:
         controller.main_menu()
