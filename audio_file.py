@@ -105,41 +105,27 @@ def file_found_menu(cwd):
         file_found_menu(cwd)
 
 
-# def message_creator(msg):
-#     with open("message.txt", 'w') as f:
-#         f.write(msg)
-#     print("\nMessage File Created/Overwritten. \nReturning to Main Menu...")
-#     main()
-#
-#
-# def overwrite(cwd, ret):
-#     print(
-#         "\nAttention: A Message File Has Been Found. Continuing Will Overwrite This File.")
-#     print("\n\tDo You Wish To Continue?\n\t1. Yes \n\t2. No")
-#     try:
-#         overwrite_choice = int(input("Please Select an Option: "))
-#     except ValueError:
-#         print("\tError: Value Must Be A Number.\n")
-#         overwrite()
-#     if overwrite_choice == 1:
-#         msg = input(
-#             "This Message will be converted to a text file. \nPlease Input A Message And Press \"Enter\" To Continue: ")
-#         message_creator(msg)
-#     elif overwrite_choice == 2:
-#         if ret == 0:
-#             file_not_found_menu(cwd)
-#         elif ret == 1:
-#             file_found_menu(cwd)
-#         else:
-#             controller.main_menu()
-#     else:
-#         print("Invalid Option: Must Be 1 or 2...")
-#         overwrite(cwd, ret)
-#
-#
+def record(cwd, ret):
+    if ret == 1:
+        print("\nAttention: An Audio File Has Been Found. Continuing Will Overwrite This File.")
+        print("\n\tDo You Wish To Continue?\n\t1. Yes \n\t2. No")
+        try:
+            overwrite_choice = int(input("Please Select an Option: "))
+        except ValueError:
+            print("\tError: Value Must Be A Number.\n")
+            record(cwd, ret)
+        if overwrite_choice == 2:
+            file_found_menu(cwd)
+        elif not overwrite_choice == 1:
+            print("Invalid Option: Must Be 1 or 2...")
+            record(cwd, ret)
+        else:
+            pass
+    # TODO: Record audio from microphone that is compatible with decode function. May not be possible due to time constraints.
+
+
 def main():
     cwd = os.getcwd() + '/decode_audio/'
-    # TODO Check if decode_audio is empty
     if os.path.exists(cwd) and not os.path.isfile(cwd):
         if not os.listdir(cwd):
             print("\nAudio File Not Found...")

@@ -127,7 +127,7 @@ def overwrite(cwd, ret):
         overwrite_choice = int(input("Please Select an Option: "))
     except ValueError:
         print("\tError: Value Must Be A Number.\n")
-        overwrite()
+        overwrite(cwd, ret)
     if overwrite_choice == 1:
         msg = input(
             "This Message will be converted to a text file. \nPlease Input A Message And Press \"Enter\" To Continue: ")

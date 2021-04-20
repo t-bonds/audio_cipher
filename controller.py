@@ -3,6 +3,7 @@
 import sys
 
 import encoder
+import decoder
 import message
 import settings
 import audio_file
@@ -36,7 +37,7 @@ def main_menu():
         code = 1
         settings.settings_menu(code)
     elif menu_choice == 6:
-        return
+        decoder.main()
     elif menu_choice == 7:
         print("Goodbye...")
         sys.exit(0)
