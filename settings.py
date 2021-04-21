@@ -88,7 +88,7 @@ def help_menu(code):
         print("\nfile: if set to true, will create a .wav audio file of the generated tones. (boolean)")
         print("\n\n -----NOTES-----\n\n")
         print("If both \'broadcast\' and \'file\' are both set to false, then this program will produce no visible output. At least one of these settings must be set to true.")
-        print("\nIf \'duration\' and \'pause\' are both set to be ver small, it will be difficult for audio decoding. For example, if duration = 0.1 and pause = 0.01, then the decoder output will be undeterminable.")
+        print("\nIf \'duration\' and \'pause\' are both set to be very small, it will be difficult for audio decoding. For example, if duration = 0.1 and pause = 0.01, then the decoder output will be difficult to read. \'precision\' in the decoder may be decreased to increase the frequency in which tones are analyzed. However, decreasing this value below 0.025 can cause errors in decoder output.")
     if code == 1:
         print("\n-----CURRENT DECODER SETTINGS-----\n")
         print("shift: set to true to create reverse a shift cipher of message. (boolean)")
@@ -104,6 +104,7 @@ def help_menu(code):
         print("\'shift\' and \'shift_key\' reverses a shift cipher, so the value for shift cipher must be given here as it is given in the encoder, and it will be subtracted automatically.")
 
         print("\'manual\' may be needed if there is high interference within tones, or if \'pause\' and \'duration\' are very small.")
+        print("\'If decoder output is scrambled, \'duration\' and \'pause\' settings in the encoder may needed to be increased. Alternatively, \'precision\' may be decreased. However it is not recommend to set \'precision\' lower than 0.025, as any lower can cause errors in decoder output.")
 
 
 def print_settings(settings, code):
