@@ -38,7 +38,7 @@ def change_settings(settings, code):
         count = i + 1
         print("\t" + str(count) + ". " + e)
 
-    print("\n\t" + str(count + 1) + ". Return To Main Menu")
+    print("\n\t" + str(count + 1) + ". Return To Menu")
     try:
         change_settings_choice = int(input("Please Select an Option: "))
     except ValueError:
@@ -74,6 +74,38 @@ def change_settings(settings, code):
         change_settings(settings, code)
 
 
+def help_menu(code):
+    if code == 0:
+        print("\n-----CURRENT ENCODER SETTINGS-----\n")
+        print("duration: length of each tone in seconds. (float)")
+        print("\nvolume: volume of tones on a scale from 0 to 1. (float)")
+        print("\nsample rate: sample rate of tones. RECOMMEND NOT CHANGING. (int)")
+        print("\npause: length of silence between each tone in seconds. (float)")
+        print("\nshift: set to true to create shift cipher of message. (boolean)")
+        print(
+            "\nshift_key: if shift enabled, determines number of letters to shift by. (int)")
+        print("\nbroadcast: if set to true, will play tones as they are created. (boolean)")
+        print("\nfile: if set to true, will create a .wav audio file of the generated tones. (boolean)")
+        print("\n\n -----NOTES-----\n\n")
+        print("If both \'broadcast\' and \'file\' are both set to false, then this program will produce no visible output. At least one of these settings must be set to true.")
+        print("\nIf \'duration\' and \'pause\' are both set to be ver small, it will be difficult for audio decoding. For example, if duration = 0.1 and pause = 0.01, then the decoder output will be undeterminable.")
+    if code == 1:
+        print("\n-----CURRENT DECODER SETTINGS-----\n")
+        print("shift: set to true to create reverse a shift cipher of message. (boolean)")
+        print("\nshift_key: if shift enabled, determines number of letters to reverse shift by. (int)")
+        print("\nbroadcast: if set to true, will play tones as they are created. (boolean)")
+        print("\nfile: if set to true, will create a .wav audio file of the generated tones. (boolean)")
+        print(
+            "\nprecision: frequency of time in seconds the decoder analyzes tones. (float)")
+        print(
+            "\nerror margin: margin of error in Hz to match each tone to a frequency. (int)")
+        print("\nmanual: allows user to read output and provide values manually. (boolean)")
+        print("\n\n -----NOTES-----\n\n")
+        print("\'shift\' and \'shift_key\' reverses a shift cipher, so the value for shift cipher must be given here as it is given in the encoder, and it will be subtracted automatically.")
+
+        print("\'manual\' may be needed if there is high interference within tones, or if \'pause\' and \'duration\' are very small.")
+
+
 def print_settings(settings, code):
     if code == 0:
         print("\n-----CURRENT ENCODER SETTINGS-----\n")
@@ -103,7 +135,7 @@ def settings_menu(code):
     if settings_choice == 1:
         change_settings(settings, code)
     elif settings_choice == 2:
-        print("\nTone, Key, & Cipher Settings for Encoding stored in 'encoder_settings.ini' file.\nSettings for Decoding stored in 'decode_settings.ini' file.\n")
+        help_menu(code)
         settings_menu(code)
     elif settings_choice == 3:
         controller.main_menu()

@@ -1,106 +1,17 @@
 #!usr/bin/env python3
 
 import configparser
-import math
 import os
-import struct
-import time
-import wave
 import sys
 import controller
 import audio_file
 import numpy as np
 from pydub import AudioSegment
 from pydub.playback import play
+from scipy.io import wavfile
 
+verbose = True
 
-#
-#
-# def shift(settings, msg, ciphertext, alphabet_key):
-#
-#     alphabet = list(alphabet_key.keys())
-#
-#     for char in msg:
-#         for index, character in enumerate(alphabet):
-#             if char == character:
-#                 ciphertext += alphabet[index + int(settings['shift_key'])]
-#     print('Plaintext: ' + msg)
-#     print('Ciphertext: ' + ciphertext)
-#     print("\n-----SHIFTING COMPLETE-----")
-#     return ciphertext
-#
-#
-# def encode(settings, msg, ciphertext, low, high, tones, alphabet_key):
-#     print("-----ENCODING TO AUDIO FORMAT-----")
-#
-#     audio = []
-#     if ciphertext == '':
-#         ciphertext = msg
-#
-#     for i, char in enumerate(ciphertext):
-#         key = alphabet_key[char]
-#         tone_1 = key[0]
-#         tone_2 = key[1]
-#         freq_1 = low[tone_1[0]]
-#         freq_2 = high[tone_1[1]]
-#         freq_3 = low[tone_2[0]]
-#         freq_4 = high[tone_2[1]]
-#         append_sin_wave(settings, freq_1, freq_2, audio)
-#         if not float(settings['pause']) == 0.0:
-#             append_pause(settings, audio)
-#         append_sin_wave(settings, freq_3, freq_4, audio)
-#         if not float(settings['pause']) == 0.0:
-#             append_pause(settings, audio)
-#
-#     file_path = save_file(settings, audio)
-#     if settings['broadcast'] == 'true':
-#         print("-----PLAYING AUDIO-----")
-#         audio_file = AudioSegment.from_wav(file_path)
-#         play(audio_file)
-#     if settings['file'] == 'false':
-#         os.remove(file_path)
-#         if len(os.listdir(os.getcwd() + '/generated_audio/')) == 0:
-#             os.rmdir(os.getcwd() + '/generated_audio/')
-#     print("-----EXECUTION COMPLETE-----")
-#     controller.main_menu()
-#
-#
-# def append_pause(settings, audio):
-#     num_samples = (float(settings['pause']) * 1000) * \
-#         (int(settings['sample_rate']) / 1000)
-#
-#     for i in range(int(num_samples)):
-#         audio.append(0.0)
-#     return
-#
-#
-# def append_sin_wave(settings, freq_1, freq_2, audio):
-#     num_samples = (float(settings['duration']) *
-#                    1000) * (int(settings['sample_rate']) / 1000)
-#
-#     for i in range(int(num_samples)):
-#         audio.append(float(settings['volume']) * np.sin(2 * math.pi * freq_1 * (i / float(settings['sample_rate']))) + float(
-#             settings['volume']) * np.sin(2 * math.pi * freq_2 * (i / float(settings['sample_rate']))))
-#     return
-#
-#
-# def save_file(settings, audio):
-#     time_str = time.strftime("%Y%m%d-%H%M%S")
-#     file_name = time_str + ".wav"
-#     if not os.path.isdir(os.getcwd() + '/generated_audio/'):
-#         os.mkdir(os.getcwd() + '/generated_audio/')
-#     file_path = os.getcwd() + '/generated_audio/' + file_name
-#     with wave.open(file_path, 'wb') as wav_file:
-#         wav_file.setnchannels(1)
-#         wav_file.setsampwidth(2)
-#         wav_file.setnframes(len(audio))
-#         wav_file.setframerate(int(settings['sample_rate']))
-#         wav_file.setcomptype("NONE", "no compression")
-#
-#         for sample in audio:
-#             wav_file.writeframes(struct.pack('h', int(sample * 32767.0)))
-#     print("-----ENCODING COMPLETE-----")
-#     return file_path
 
 def init():
     low = [697, 770, 852, 941]
@@ -117,7 +28,6 @@ def init():
              "*": [3, 0],
              "0": [3, 1],
              "#": [3, 2]}
-
     # Be Advised: This is a modified alphabet accounting for the ability to send numbers as a string.
     # This is not Standard DTMF Encoding
 
@@ -217,27 +127,135 @@ def init():
                     "}": [tones["9"], tones["3"]],
                     "~": [tones["9"], tones["4"]]}
 
-    return low, high, tones, alphabet_key
-
-
-def main():
-
-    low, high, tones, alphabet_key = init()
-
-    print("\n-----STARTING DECODER-----")
     settings = {}
     parser = configparser.ConfigParser()
     parser.read("decoder_settings.ini")
     args = parser['SETTINGS']
     for i in args:
         settings[i] = args[i]
+
+    return low, high, tones, alphabet_key, settings
+
+
+def raw_decode(file_name, settings):
+    dtmf = {(697, 1209): "1", (697, 1336): "2", (697, 1477): "3", (770, 1209): "4", (770, 1336): "5", (770, 1477): "6", (852, 1209): "7", (852, 1336): "8",
+            (852, 1477): "9",  (941, 1336): "0"}
+
+    fps, data = wavfile.read(file_name)
+    precision = float(settings['precision'])
+    duration = len(data) / fps
+    step = int(len(data) // (duration // precision))
+    print("-----RAW OUTPUT-----\n")
+    print("0:00 ", end='', flush=True)
+    c = ""
+    raw = ""
+    for i in range(0, len(data) - step, step):
+        signal = data[i:i + step]
+        frequencies = np.fft.fftfreq(signal.size, d=1 / fps)
+        amplitudes = np.fft.fft(signal)
+
+        # Low
+        i_min = np.where(frequencies > 0)[0][0]
+        i_max = np.where(frequencies > 1050)[0][0]
+        freq = frequencies[i_min:i_max]
+        amp = abs(amplitudes.real[i_min:i_max])
+        lf = freq[np.where(amp == max(amp))[0][0]]
+        delta = int(settings['error_margin'])
+        best = 0
+
+        for f in [697, 770, 852, 941]:
+            if abs(lf - f) < delta:
+                delta = abs(lf - f)
+                best = f
+
+        lf = best
+
+        # High
+        i_min = np.where(frequencies > 1100)[0][0]
+        i_max = np.where(frequencies > 2000)[0][0]
+        freq = frequencies[i_min:i_max]
+        amp = abs(amplitudes.real[i_min:i_max])
+        hf = freq[np.where(amp == max(amp))[0][0]]
+        delta = int(settings['error_margin'])
+        best = 0
+
+        for f in [1209, 1336, 1477, 1633]:
+            if abs(hf - f) < delta:
+                delta = abs(hf - f)
+                best = f
+        hf = best
+
+        t = int(i // step * precision)
+
+        if t > int((i - 1) // step * precision):
+            m = str(int(t // 60))
+            s = str(t % 60)
+            s = "0" * (2 - len(s)) + s
+            print("\n" + m + ":" + s + " ", end='', flush=True)
+        try:
+            if lf == 0 or hf == 0:
+                print(".", end='', flush=True)
+                raw = raw + "."
+                c = ""
+            else:
+                c = dtmf[(lf, hf)]
+                print(c, end='', flush=True)
+                raw = raw + str(c)
+        except KeyError:
+            raw = raw + "."
+    return raw
+
+
+def decode(raw, settings, alphabet_key, tones):
+    if settings['manual'] == 'true':
+        print("\n\n-----BEGINNING MANUAL INPUT-----\n ")
+        decode_values = list(input(
+            "Please Input Numerical Output Values(2-digit numbers, space seperated): ").split())
+        value_list = []
+        msg = ""
+        for value in decode_values:
+            for digit in value:
+                for key, value in tones.items():
+                    if digit == key:
+                        value_list.append(value)
+        for i, values in enumerate(value_list):
+            check_list = []
+            if i % 2 == 0:
+                check_list = [value_list[i], value_list[i + 1]]
+                for key, value in alphabet_key.items():
+                    if value == check_list:
+                        msg = msg + str(key)
+        return msg
+    else:
+        print("\n-----ERROR: AUTOMATIC DECODING CURRENTLY UNAVALIABLE. ISSUES WITH INTEFERENCE IN DECODING-----")
+        controller.main_menu()
+        # TODO: DETERMINE SOLUTION FOR AUTOMATIC DECODING
+        return msg
+
+
+def shift(settings, msg, alphabet_key):
+
+    alphabet = list(alphabet_key.keys())
+    plaintext = ''
+    for char in msg:
+        for index, character in enumerate(alphabet):
+            if char == character:
+                plaintext += alphabet[index - int(settings['shift_key'])]
+    print('Ciphertext: ' + msg)
+    print('Plaintext: ' + plaintext)
+    print("\n-----SHIFTING COMPLETE-----")
+    return plaintext
+
+
+def main():
+
+    low, high, tones, alphabet_key, settings = init()
+
+    print("\n-----STARTING DECODER-----")
     print("-----CURRENT DECODER SETTINGS-----\n")
     for i in settings:
         print(i + " = " + settings[i])
     print("\n-----SETTINGS LOADED-----")
-    if settings['verbose'] == 'false' and settings['file'] == 'false':
-        print("ERROR: 'broadcast' and 'file' variables are both false. This program will not generate any output.")
-        controller.main_menu()
     cwd = os.getcwd() + '/decode_audio/'
     if len(os.listdir(cwd)) > 1:
         print("ERROR: MORE THAN ONE AUDIO FILE FOUND. \nEXITING...")
@@ -248,17 +266,33 @@ def main():
         audio_file.file_not_found_menu(cwd)
     for f in os.listdir(cwd):
         file_name = (os.path.join(cwd, f))
-        print(file_name)
+        local_file = f
     if settings['broadcast'] == 'true':
         print("-----PLAYING AUDIO-----")
         audio = AudioSegment.from_wav(file_name)
         play(audio)
 
-    # if settings['shift'] == 'true':
-    #     print("-----SHIFTING-----\n")
-    #     ciphertext = shift(settings, msg, ciphertext, alphabet_key)
-    # else:
-    #     print('Plaintext: ' + msg)
+    raw = raw_decode(file_name, settings)
+    msg = decode(raw, settings, alphabet_key, tones)
+
+    if settings['shift'] == 'true':
+        print("\n-----SHIFTING-----\n")
+        plaintext = shift(settings, msg, alphabet_key)
+    else:
+        print("\n-----FINAL OUTPUT-----")
+        print('Plaintext: ' + plaintext)
+    if settings['file'] == 'true':
+        with open(os.getcwd() + "/" + local_file + "_report.txt", 'w') as f:
+            f.write("----- DECODING REPORT OF \'" + local_file +
+                    "\' -----\n\n-----RAW_OUTPUT-----")
+            f.write("\n\n" + raw)
+            if settings['shift'] == 'true':
+                f.write("\n\n-----FINAL_OUTPUT-----")
+                f.write("\nCiphertext_Output: " + msg)
+            f.write('\nPlaintext_Output: ' + plaintext)
+        print("-----OUTPUT FILE CREATED-----")
+    print("\n-----EXECUTION COMPLETE-----")
+    controller.main_menu()
 
 
 if __name__ == '__main__':

@@ -11,7 +11,7 @@ def file_not_found_menu(cwd):
 
     print("\n\tOptions:")
     print("\t1. Add Audio File")
-    print("\t2. Record Audio File")
+    print("\t2. Record Audio File (Not Implemented)")
     print("\t3. Help")
     print("\t4. Return To Main Menu")
     print("\t5. Exit")
@@ -105,7 +105,7 @@ def file_found_menu(cwd):
         file_found_menu(cwd)
 
 
-def record(cwd, ret):
+def record_menu(cwd, ret):
     if ret == 1:
         print("\nAttention: An Audio File Has Been Found. Continuing Will Overwrite This File.")
         print("\n\tDo You Wish To Continue?\n\t1. Yes \n\t2. No")
@@ -113,15 +113,27 @@ def record(cwd, ret):
             overwrite_choice = int(input("Please Select an Option: "))
         except ValueError:
             print("\tError: Value Must Be A Number.\n")
+            record_menu(cwd, ret)
+        if overwrite_choice == 1:
             record(cwd, ret)
-        if overwrite_choice == 2:
+            controller.main_menu()
+        elif overwrite_choice == 2:
             file_found_menu(cwd)
-        elif not overwrite_choice == 1:
-            print("Invalid Option: Must Be 1 or 2...")
-            record(cwd, ret)
         else:
-            pass
-    # TODO: Record audio from microphone that is compatible with decode function. May not be possible due to time constraints.
+            print("Invalid Option: Must Be 1 or 2...")
+            record_menu(cwd, ret)
+
+
+def record(cwd, ret):
+
+    print("ALERT: MICROPHONE RECORDING UNAVALIABLE DUE TO DEPRECATED DEPENDENCIES.")
+    # TODO: EVENTUALLY FIND A PACKAGE THAT DOESNT RELY ON PORTAUDIO.
+
+    # time_str = time.strftime("%Y%m%d-%H%M%S")
+    # file_name = cwd + time_str + ".wav"
+    # print('-----RECORDING. PRESS CTRL + C TO END-----')
+    # print('-----RECORDING COMPLETE-----')
+    # print("-----FILE SAVED-----")
 
 
 def main():
